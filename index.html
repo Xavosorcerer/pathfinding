@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Hello!</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+
+    <!-- import the webpage's javascript file -->
+    <script src="/phaser.js"></script>
+  </head>
+  <body>
+    <script>
+      var RGBToHEX = function(r, g, b) {
+        return (r << 16) | (g << 8) | b;
+      };
+      var config = {
+        type: Phaser.AUTO,
+        width: 1001,
+        height: 701,
+        scene: {
+          preload: preload,
+          create: create,
+          update: update
+        }
+      };
+      var game = new Phaser.Game(config);
+
+      function preload() {
+        this.load.image(
+          "sky",
+          "https://cdn.glitch.com/d02a816e-9196-4268-81af-3743e1d4c491%2Fsky.png?v=1575320804898"
+        );
+        this.load.image(
+          "block",
+          "https://cdn.glitch.com/d02a816e-9196-4268-81af-3743e1d4c491%2FBasic_square.svg?v=1575998325347"
+        );
+        this.load.image(
+          "wall",
+          "https://cdn.glitch.com/d02a816e-9196-4268-81af-3743e1d4c491%2Fwall.jfif?v=1575998325407"
+        );
+      }
+      var grid = []; //holds the actual image objects
+      var blockType = []; // wall or block?
+      var needEnter = true;
+      var enterPos = [];
+      var needExit = true;
+      var exitPos = [];
+      function create() {
+        this.add.image(500, 350, "sky").setScale(2, 2);
+        //var grid = this.add.group();
+        for (var r = 0; r < 10; r++) {
+          grid[r] = [];
+          blockType[r] = [];
+          for (var c = 0; c < 7; c++) {
+            var brick = this.add
+              .image(r * 100, c * 100, "block")
+              .setDisplaySize(100, 100)
+              //.setScale(0.12, 0.16) // scale could be 0.13 0.17
+              .setOrigin(0, 0);
+            brick.setInteractive();
+            grid[r][c] = brick;
+            blockType[r][c] = "block";
+          }
+        }
+        this.input.on(
+          "pointerdown",
+          (uno, dos) => {
+            if (dos[0] !== undefined) {
+              var row = dos[0].x / 100;
+              var column = dos[0].y / 100;
+              //grid[row][column].visible = false;
+              if (blockType[row][column] == "block") {
+                if (needEnter) {
+                  grid[row][column].setTint(RGBToHEX(0, 255, 0));
+                  needEnter = false;
+                  blockType[row][column] = "enter";
+                  enterPos = [row, column];
+                } else if (needExit) {
+                  grid[row][column].setTint(RGBToHEX(255, 0, 0));
+                  needExit = false;
+                  blockType[row][column] = "exit";
+                  exitPos = [row, column];
+                } else {
+                  grid[row][column].setTexture("wall").setDisplaySize(100, 100);
+                  blockType[row][column] = "wall";
+                }
+              } else if (blockType[row][column] == "wall") {
+                grid[row][column].setTexture("block").setDisplaySize(100, 100);
+                blockType[row][column] = "block";
+              }
+              else if (blockType[row][column] == "enter") {
+                grid[row][column].setTexture("block").setDisplaySize(100, 100);
+                blockType[row][column] = "block";
+                grid[row][column].setTint(RGBToHEX(255, 255, 255));
+                needEnter = true;
+              }
+              else if (blockType[row][column] == "exit") {
+                grid[row][column].setTexture("block").setDisplaySize(100, 100);
+                blockType[row][column] = "block";
+                grid[row][column].setTint(RGBToHEX(255, 255, 255));
+                needExit = true;
+              }
+              /* for (var i = -1; i <= 1; i++) {
+                    for (var o = -1; o <= 1; o++) {
+                      if (
+                        grid[row + i] !== undefined &&
+                        grid[row + i][column + o]
+                      ) {
+                        grid[row + i][column + o].visible = false;
+                        //grid[row + i][column + o].loadTexture("wall");
+                      }
+                    }
+                  }*/
+            }
+          },
+          this
+        );
+      }
+      function update() {}
+      function updateGrid() {}
+    </script>
+  </body>
+</html>
